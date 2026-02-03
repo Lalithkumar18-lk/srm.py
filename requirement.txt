@@ -1,1 +1,1 @@
-pip install streamlit nltk pandas
+pip install streamlit pandas scikit-learn
