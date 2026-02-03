@@ -1,41 +1,89 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 
-st.title("Student Marks Analysis and Visualization")
+st.set_page_config(page_title="Advocate AI", layout="centered")
 
-st.subheader("Enter Student Details")
+st.title("⚖️ Advocate AI – Legal Assistant")
 
-name = st.text_input("Student Name")
+menu = ["Legal Chatbot", "Document Generator", "Case Records"]
+choice = st.sidebar.selectbox("Select Module", menu)
 
-marks = {
-    "Subject 1": st.number_input("Subject 1 Marks", 0, 100),
-    "Subject 2": st.number_input("Subject 2 Marks", 0, 100),
-    "Subject 3": st.number_input("Subject 3 Marks", 0, 100)
-}
+if "cases" not in st.session_state:
+    st.session_state.cases = []
 
-if st.button("Analyze"):
-    df = pd.DataFrame(list(marks.items()), columns=["Subject", "Marks"])
+if choice == "Legal Chatbot":
+    st.header("🤖 Legal Chatbot")
 
-    total = df["Marks"].sum()
-    average = df["Marks"].mean()
+    user_query = st.text_input("Ask your legal question")
 
-    if average >= 75:
-        grade = "A"
-        result = "Pass"
-    elif average >= 50:
-        grade = "B"
-        result = "Pass"
-    else:
-        grade = "C"
-        result = "Fail"
+    def legal_response(query):
+        query = query.lower()
+        if "divorce" in query:
+            return "Divorce laws in India fall under the Hindu Marriage Act, 1955."
+        elif "fir" in query:
+            return "FIR can be filed at the nearest police station or online in some states."
+        elif "bail" in query:
+            return "Bail is a legal right in bailable offenses under CrPC."
+        elif "property" in query:
+            return "Property disputes are handled under civil law."
+        else:
+            return "Please consult an advocate for detailed legal advice."
 
-    st.success("Analysis Completed")
+    if st.button("Get Answer"):
+        if user_query:
+            response = legal_response(user_query)
+            st.success(response)
+        else:
+            st.warning("Please enter a question")
 
-    st.write("Student Name:", name)
-    st.write("Total Marks:", total)
-    st.write("Average:", average)
-    st.write("Grade:", grade)
-    st.write("Result:", result)
+elif choice == "Document Generator":
+    st.header("📄 Legal Document Generator")
 
-    st.subheader("Marks Visualization")
-    st.bar_chart(df.set_index("Subject"))
+    doc_type = st.selectbox(
+        "Select Document Type",
+        ["Legal Notice", "Affidavit", "Rental Agreement"]
+    )
+
+    name = st.text_input("Your Name")
+    address = st.text_area("Address")
+    date = datetime.now().strftime("%d-%m-%Y")
+
+    if st.button("Generate Document"):
+        if name and address:
+            document = f"""
+            {doc_type}
+            
+            Date: {date}
+
+            I, {name}, residing at {address}, hereby declare that the above
+            information is true to the best of my knowledge.
+
+            Signature:
+            """
+            st.text_area("Generated Document", document, height=250)
+        else:
+            st.warning("Please fill all fields")
+
+elif choice == "Case Records":
+    st.header("📁 Case Management")
+
+    client = st.text_input("Client Name")
+    case_type = st.selectbox(
+        "Case Type",
+        ["Civil", "Criminal", "Family", "Property"]
+    )
+
+    if st.button("Add Case"):
+        if client:
+            st.session_state.cases.append({
+                "Client": client,
+                "Case Type": case_type
+            })
+            st.success("Case added successfully")
+        else:
+            st.warning("Enter client name")
+
+    if st.session_state.cases:
+        df = pd.DataFrame(st.session_state.cases)
+        st.table(df)
